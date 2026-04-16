@@ -6,7 +6,7 @@ function buildDashboardUrl(guildId) {
         process.env.WEB_DASHBOARD_URL
         || process.env.PUBLIC_DASHBOARD_URL
         || process.env.WEB_ORIGIN
-        || `http://localhost:${Number(process.env.WEB_PORT) || DEFAULT_WEB_PORT}`;
+        || `http://localhost:${Number(process.env.WEB_PORT || process.env.PORT) || DEFAULT_WEB_PORT}`;
 
     if (!configuredBase || typeof configuredBase !== 'string') {
         return null;

@@ -24,7 +24,7 @@ const config = require('../utils/config');
 const User = require('../models/user');
 const Conversation = require('../models/conversation');
 
-const DEFAULT_WEB_PORT = Number(process.env.WEB_PORT) || 3000;
+const DEFAULT_WEB_PORT = Number(process.env.WEB_PORT || process.env.PORT) || 3000;
 const DISCORD_OAUTH_AUTHORIZE_URL = 'https://discord.com/oauth2/authorize';
 const DISCORD_OAUTH_TOKEN_URL = 'https://discord.com/api/oauth2/token';
 const DISCORD_API_BASE_URL = 'https://discord.com/api/v10';
