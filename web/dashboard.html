@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Michele Dashboard</title>
+    <style>
+        body { font-family: Inter, Arial, sans-serif; margin: 0; background: #0f1115; color: #ecf1ff; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; display: grid; gap: 16px; }
+        .card { background: #171b24; border: 1px solid #272f3f; border-radius: 12px; padding: 14px; }
+        h1, h2 { margin: 0 0 10px; }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        input, select, button, textarea { background: #0f141d; color: #ecf1ff; border: 1px solid #344058; border-radius: 8px; padding: 9px 10px; }
+        input, select, textarea { flex: 1; min-width: 180px; }
+        button { cursor: pointer; }
+        button:hover { filter: brightness(1.1); }
+        ul { margin: 10px 0 0; padding-left: 20px; }
+        #systemLog { min-height: 120px; max-height: 220px; overflow: auto; font-size: 13px; line-height: 1.4; }
+        #roleplayOutput { white-space: pre-wrap; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <section class="card">
+            <h1>Michele Web Dashboard</h1>
+            <div class="row">
+                <strong id="authStatus">Checking session...</strong>
+                <button id="loginBtn" hidden>Login Discord</button>
+                <button id="logoutBtn" hidden>Logout</button>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <label for="guildSelect">Guild:</label>
+                <select id="guildSelect"></select>
+                <button id="refreshStateBtn">Refresh State</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Music Control</h2>
+            <div class="row">
+                <input id="musicQuery" type="text" placeholder="YouTube URL hoặc từ khóa">
+                <button id="playBtn">Play</button>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <button id="pauseBtn">Pause</button>
+                <button id="resumeBtn">Resume</button>
+                <button id="skipBtn">Skip</button>
+                <button id="stopBtn">Stop</button>
+                <button id="repeatBtn">Toggle Repeat</button>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <input id="volumeInput" type="number" min="0" max="200" value="100">
+                <button id="setVolumeBtn">Set Volume</button>
+            </div>
+            <p id="nowPlaying">No active playback</p>
+            <ul id="queue"></ul>
+        </section>
+
+        <section class="card">
+            <h2>Roleplay AI</h2>
+            <div class="row">
+                <textarea id="roleplayInput" rows="3" placeholder="Nhập nội dung cần AI phản hồi"></textarea>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <button id="roleplayBtn">Gửi Roleplay</button>
+            </div>
+            <div id="roleplayOutput"></div>
+        </section>
+
+        <section class="card">
+            <h2>System Log</h2>
+            <div id="systemLog"></div>
+        </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/web/app.js"></script>
+</body>
+</html>
