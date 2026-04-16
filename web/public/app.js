@@ -176,8 +176,7 @@
     });
 
     loginBtn.addEventListener('click', () => {
-        const redirect = `/dashboard${window.location.search || ''}`;
-        window.location.href = `/auth/login?redirect=${encodeURIComponent(redirect)}`;
+        window.location.href = '/auth/login';
     });
 
     logoutBtn.addEventListener('click', async () => {

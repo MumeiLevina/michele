@@ -2,6 +2,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const express = require('express');
 const session = require('express-session');
+const rateLimit = require('express-rate-limit');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 
@@ -28,32 +29,7 @@ const DISCORD_OAUTH_AUTHORIZE_URL = 'https://discord.com/oauth2/authorize';
 const DISCORD_OAUTH_TOKEN_URL = 'https://discord.com/api/oauth2/token';
 const DISCORD_API_BASE_URL = 'https://discord.com/api/v10';
 const SESSION_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 12;
-
-function createSimpleRateLimiter({ windowMs = 60_000, maxRequests = 120 }) {
-    const bucket = new Map();
-
-    return (req, res, next) => {
-        const now = Date.now();
-        const key = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-        const current = bucket.get(key);
-
-        if (!current || now > current.resetAt) {
-            bucket.set(key, { count: 1, resetAt: now + windowMs });
-            next();
-            return;
-        }
-
-        if (current.count >= maxRequests) {
-            res.status(429).json({
-                error: 'Too many requests. Please try again later.'
-            });
-            return;
-        }
-
-        current.count += 1;
-        next();
-    };
-}
+const MAX_CONVERSATION_MESSAGES = 40;
 
 function ensureSessionCsrf(req) {
     if (!req.session.csrfToken) {
@@ -91,8 +67,13 @@ function buildDiscordAvatarUrl(user) {
 }
 
 async function exchangeDiscordCodeForToken(code) {
+    const clientId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
+    if (!clientId) {
+        throw new Error('Missing DISCORD_CLIENT_ID (or CLIENT_ID).');
+    }
+
     const params = new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID || '',
+        client_id: clientId,
         client_secret: process.env.DISCORD_CLIENT_SECRET || '',
         grant_type: 'authorization_code',
         code,
@@ -288,8 +269,19 @@ function setupWebServer(client) {
         }
     });
 
+    const configuredSessionSecret = process.env.WEB_SESSION_SECRET || process.env.SESSION_SECRET || '';
+    if (!configuredSessionSecret && process.env.NODE_ENV === 'production') {
+        throw new Error('WEB_SESSION_SECRET (or SESSION_SECRET) is required in production.');
+    }
+    if (!configuredSessionSecret) {
+        console.warn(
+            'WEB_SESSION_SECRET is not set. Using an ephemeral in-memory secret (development only, single-instance only).'
+        );
+    }
+    const effectiveSessionSecret = configuredSessionSecret || crypto.randomBytes(32).toString('hex');
+
     const sessionMiddleware = session({
-        secret: process.env.WEB_SESSION_SECRET || process.env.SESSION_SECRET || 'change-this-session-secret',
+        secret: effectiveSessionSecret,
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -301,21 +293,29 @@ function setupWebServer(client) {
     });
 
     const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+    const staticAssetLimiter = rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false });
+    const apiLimiter = rateLimit({ windowMs: 60_000, max: 180, standardHeaders: true, legacyHeaders: false });
+    const roleplayLimiter = rateLimit({ windowMs: 60_000, max: 40, standardHeaders: true, legacyHeaders: false });
 
     app.set('trust proxy', 1);
-    app.use(createSimpleRateLimiter({ windowMs: 60_000, maxRequests: 180 }));
     app.use(express.json({ limit: '256kb' }));
     app.use(sessionMiddleware);
+    app.use('/api', apiLimiter);
     app.use('/src', express.static(path.join(__dirname, '..', 'src')));
-    app.get('/style.css', (req, res) => {
+    app.get('/style.css', staticAssetLimiter, (req, res) => {
         res.sendFile(path.join(__dirname, 'style.css'));
     });
-    app.get('/web/app.js', (req, res) => {
+    app.get('/web/app.js', staticAssetLimiter, (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'app.js'));
     });
-    app.get('/dashboard', (req, res) => {
+    app.get('/dashboard', staticAssetLimiter, (req, res) => {
         res.sendFile(path.join(__dirname, 'dashboard.html'));
     });
+
+    const broadcaster = createPlayerBroadcaster(io, client);
+    client.webDashboard = {
+        emitMusicState: broadcaster.emitGuildState
+    };
 
     const oauthEnabled = Boolean(
         (process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID)
@@ -324,10 +324,6 @@ function setupWebServer(client) {
     );
 
     app.get('/auth/login', (req, res) => {
-        const redirectTarget = typeof req.query.redirect === 'string' && req.query.redirect
-            ? req.query.redirect
-            : '/dashboard';
-
         if (!oauthEnabled) {
             const devUserId = process.env.DISCORD_DASHBOARD_DEV_USER_ID;
             if (!devUserId) {
@@ -342,13 +338,12 @@ function setupWebServer(client) {
                 }
             };
             ensureSessionCsrf(req);
-            res.redirect(redirectTarget);
+            res.redirect('/dashboard');
             return;
         }
 
         const state = crypto.randomBytes(18).toString('hex');
         req.session.oauthState = state;
-        req.session.postAuthRedirect = redirectTarget;
 
         const url = new URL(DISCORD_OAUTH_AUTHORIZE_URL);
         url.searchParams.set('client_id', process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID);
@@ -387,9 +382,7 @@ function setupWebServer(client) {
             ensureSessionCsrf(req);
             delete req.session.oauthState;
 
-            const redirectTarget = req.session.postAuthRedirect || '/dashboard';
-            delete req.session.postAuthRedirect;
-            res.redirect(redirectTarget);
+            res.redirect('/dashboard');
         } catch (error) {
             console.error('Discord OAuth callback error:', error);
             res.status(500).send('Login failed.');
@@ -568,7 +561,7 @@ function setupWebServer(client) {
         }
     });
 
-    app.post('/api/roleplay/respond', requireAuthenticated, requireCsrf, async (req, res) => {
+    app.post('/api/roleplay/respond', requireAuthenticated, requireCsrf, roleplayLimiter, async (req, res) => {
         try {
             const user = getSessionUser(req);
             const prompt = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
@@ -632,8 +625,8 @@ function setupWebServer(client) {
                 role: 'assistant',
                 content: aiResponse
             });
-            if (conversation.messages.length > 40) {
-                conversation.messages = conversation.messages.slice(-40);
+            if (conversation.messages.length > MAX_CONVERSATION_MESSAGES) {
+                conversation.messages = conversation.messages.slice(-MAX_CONVERSATION_MESSAGES);
             }
             await conversation.save();
 
@@ -689,11 +682,6 @@ function setupWebServer(client) {
             });
         });
     });
-
-    const broadcaster = createPlayerBroadcaster(io, client);
-    client.webDashboard = {
-        emitMusicState: broadcaster.emitGuildState
-    };
 
     httpServer.listen(DEFAULT_WEB_PORT, () => {
         console.log(`Web dashboard listening on port ${DEFAULT_WEB_PORT}`);
