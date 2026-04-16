@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const { YoutubeExtractor } = require('discord-player-youtube');
-const { hasDjPermission } = require('./utils/music');
-const { setupWebServer } = require('./web/server');
+const { hasDjPermission } = require('../utils/music');
+const { setupWebServer } = require('./server');
 
 const BUTTON_COLLECTOR_TIMEOUT_MS = 15 * 60 * 1000;
 
@@ -272,7 +272,7 @@ mongoose.connect(normalizeMongoUri(process.env.MONGODB_URI))
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Load commands
-const commandsPath = path.join(__dirname, 'command');
+const commandsPath = path.join(__dirname, '..', 'command');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
@@ -287,7 +287,7 @@ for (const file of commandFiles) {
 }
 
 // Load events
-const eventsPath = path.join(__dirname, 'event');
+const eventsPath = path.join(__dirname, '..', 'event');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
