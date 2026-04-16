@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neko Cozy Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="browser-shell">
+        <header class="browser-top">
+            <div class="browser-tab">Meimei control panel</div>
+            <div class="browser-actions">- □ ×</div>
+        </header>
+
+        <div class="dashboard-shell glass-panel">
+            <aside class="sidebar glass-panel soft-panel">
+                <button class="menu-item active" type="button">
+                    <span class="menu-glyph">🐾</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">🎵</span>
+                    <span>Play Music</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">🃏</span>
+                    <span>Card Game</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">🛡</span>
+                    <span>Moderation</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">⚙</span>
+                    <span>Automation</span>
+                </button>
+            </aside>
+
+            <main class="main-content">
+                <header class="top-bar glass-panel soft-panel">
+                    <div class="brand">
+                        <img src="./src/cat.png" alt="Neko Cozy logo" class="brand-logo">
+                        <h1>Hoshina Meito</h1>
+                    </div>
+                    <div class="status">
+                        Status: <span class="online-text">Online (Purring)</span>
+                        <img src="./src/paw.png" alt="Online mascot" class="status-mascot">
+                    </div>
+                </header>
+
+                <section class="dashboard-grid">
+                    <article class="card glass-panel soft-panel active-status">
+                        <h2>Active Status</h2>
+                        <div class="active-content">
+                            <img src="./src/drone.png" alt="Bot mascot" class="bot-avatar">
+                            <div>
+                                <p><strong>Bot Activity:</strong> Excellent</p>
+                                <p><strong>Health:</strong> Perfect</p>
+                                <p><strong>Mood:</strong> Kawaii</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel neon-card interaction-card">
+                        <h2>Interaction Volume</h2>
+                        <img src="./src/terminal.png" alt="Interaction chart" class="interaction-chart">
+                        <p class="chart-note">Past 24 Hours</p>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view command-card">
+                        <div class="task-header">
+                            <h2>Bot Command Center</h2>
+                            <span class="dots">/</span>
+                        </div>
+                        <div class="command-grid">
+                            <button class="cmd-btn" type="button" data-command="/play">/play · Phát nhạc</button>
+                            <button class="cmd-btn" type="button" data-command="/cards">/cards · Đánh bài</button>
+                            <button class="cmd-btn" type="button" data-command="/quote">/quote · Tạo quote</button>
+                            <button class="cmd-btn" type="button" data-command="/say">/say · Nhắn tin</button>
+                        </div>
+                        <p class="command-note" id="commandStatus">Mẹo: chọn nhanh lệnh ở trên để thao tác bot nhanh hơn.</p>
+                    </article>
+
+                    <article class="card glass-panel soft-panel stat-card">
+                        <h2>Stat Hub</h2>
+                        <div class="stat-inner">
+                            <img src="./src/michele.png" alt="Virtual assistant mascot" class="assistant">
+                            <div class="stat-text">
+                                <h3>Virtual Assistant</h3>
+                                <p>Mascot Supervisor</p>
+                                <p>Character Name: Neko-Super</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view moderation-card">
+                        <h2>Moderation</h2>
+                        <div class="pill-list">
+                            <button type="button" class="mod-pill danger" data-action="Ban">Ban</button>
+                            <button type="button" class="mod-pill danger" data-action="Kick">Kick</button>
+                            <button type="button" class="mod-pill warning" data-action="Timeout">Timeout</button>
+                            <button type="button" class="mod-pill warning" data-action="Purge">Purge</button>
+                        </div>
+                        <div class="mod-preview">
+                            <p><strong>Target:</strong> @user</p>
+                            <p><strong>Reason:</strong> Rule violation</p>
+                            <p id="modStatusLine"><strong>Status:</strong> Ready to execute</p>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view automation-card">
+                        <h2>Automation & Community</h2>
+                        <ul class="system-list">
+                            <li><span>Auto-Responder</span><span class="state on">ON</span></li>
+                            <li><span>Giveaways</span><span class="state">Setup</span></li>
+                            <li><span>Ticket system</span><span class="state">Manage</span></li>
+                            <li><span>Welcomer</span><span class="state on">ON</span></li>
+                        </ul>
+                        <div class="chat-window" id="botLog">
+                            <div class="message bubble-light">Mẫu nhắn tin nhanh đã sẵn sàng để gửi.</div>
+                            <div class="message bubble-dark">Dùng /say để broadcast toàn server.</div>
+                        </div>
+                        <label class="chat-input-wrap" aria-label="chat input">
+                            <input id="messageInput" type="text" placeholder="Nhập nội dung nhắn tin Discord...">
+                            <button id="sendMessageBtn" type="button" aria-label="send message">Send</button>
+                        </label>
+                    </article>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const commandButtons = document.querySelectorAll('.cmd-btn');
+        const commandStatus = document.getElementById('commandStatus');
+        const modButtons = document.querySelectorAll('.mod-pill');
+        const modStatusLine = document.getElementById('modStatusLine');
+        const systemRows = document.querySelectorAll('.system-list li');
+        const botLog = document.getElementById('botLog');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+
+        commandButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const command = button.dataset.command;
+                commandStatus.textContent = `Da chon ${command}. San sang thuc thi lenh bot.`;
+            });
+        });
+
+        modButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.action;
+                modStatusLine.innerHTML = `<strong>Status:</strong> ${action} command queued`;
+            });
+        });
+
+        systemRows.forEach((row) => {
+            row.addEventListener('click', () => {
+                const badge = row.querySelector('.state');
+                const isOn = badge.classList.toggle('on');
+                badge.textContent = isOn ? 'ON' : 'OFF';
+            });
+        });
+
+        const appendLog = (text, tone) => {
+            const message = document.createElement('div');
+            message.className = `message ${tone}`;
+            message.textContent = text;
+            botLog.appendChild(message);
+            botLog.scrollTop = botLog.scrollHeight;
+        };
+
+        sendMessageBtn.addEventListener('click', () => {
+            const value = messageInput.value.trim();
+            if (!value) {
+                return;
+            }
+
+            appendLog(`/say ${value}`, 'bubble-dark');
+            appendLog('Tin nhan da duoc dua vao hang doi gui Discord.', 'bubble-light');
+            messageInput.value = '';
+        });
+
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessageBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
