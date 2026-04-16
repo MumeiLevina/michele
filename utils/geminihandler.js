@@ -102,7 +102,7 @@ async function handleGeminiRequest(messages, characterProfile, userPreferences =
         const styleInstruction = config.getStyleInstruction(userPreferences.responseStyle || {});
         
         let systemContent;
-        if (characterProfile.name === config.defaultCharacterName || characterProfile.name === 'Lilith') {
+        if (characterProfile.name === config.defaultCharacterName) {
             systemContent = `${config.promptCore}\n\n${namesList}\nNgoại hình: ${characterProfile.appearance || config.appearance.defaultAppearance}\n${languagePreference}\n${personalityOverride}\n${styleInstruction}\n\nQUAN TRỌNG: Khi ai đó nhắc đến bất kỳ tên nào của bạn (${allPossibleNames.join(', ')}), hãy thừa nhận rằng họ đang nói chuyện với bạn và phản hồi một cách tự nhiên theo nhân vật. Luôn giữ vai và duy trì các đặc điểm tính cách của bạn trong phản hồi.`;
         } else {
             systemContent = `Bạn đang nhập vai một nhân vật. ${namesList}\nTính cách: ${characterProfile.personality}\nNgoại hình: ${characterProfile.appearance}\n${languagePreference}\n${personalityOverride}\n${styleInstruction}\n\nQUAN TRỌNG: Khi ai đó nhắc đến bất kỳ tên nào của bạn (${allPossibleNames.join(', ')}), hãy thừa nhận rằng họ đang nói chuyện với bạn và phản hồi một cách tự nhiên theo nhân vật. Luôn giữ vai và duy trì các đặc điểm tính cách của bạn trong phản hồi.`;

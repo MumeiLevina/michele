@@ -61,7 +61,7 @@ module.exports = {
                     { name: ' Link server', value: 'Bạn có thể tham gia lại server!', inline: false }
                 )
                 .setThumbnail(interaction.guild.iconURL())
-                .setFooter({ text: 'Lilith Bot - Unban System' })
+                .setFooter({ text: 'Michele Bot - Unban System' })
                 .setTimestamp();
 
             // Gửi DM cho người được unban
@@ -85,7 +85,7 @@ module.exports = {
                     { name: ' Thông báo DM', value: dmSent ? ' Đã gửi' : ' Không gửi được (DM đóng hoặc bot bị chặn)', inline: false }
                 )
                 .setThumbnail(user.displayAvatarURL())
-                .setFooter({ text: 'Lilith Bot - Unban System' })
+                .setFooter({ text: 'Michele Bot - Unban System' })
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [successEmbed] });

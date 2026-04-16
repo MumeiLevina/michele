@@ -21,6 +21,18 @@ module.exports = {
                 { userId: message.author.id },
                 { upsert: true, new: true }
             );
+
+            let effectiveDefaultCharacterName = user.defaultCharacterName || config.defaultCharacterName;
+            const hasDefaultProfile = user.characterProfiles.some(
+                profile => profile.name === effectiveDefaultCharacterName
+            );
+
+            // Migrate legacy/default names that no longer map to a valid profile.
+            if (!hasDefaultProfile && effectiveDefaultCharacterName !== config.defaultCharacterName) {
+                effectiveDefaultCharacterName = config.defaultCharacterName;
+                user.defaultCharacterName = config.defaultCharacterName;
+                await user.save();
+            }
             
             let conversation = await Conversation.findOne({
                 userId: message.author.id,
@@ -30,9 +42,17 @@ module.exports = {
             if (!conversation) {
                 conversation = new Conversation({
                     userId: message.author.id,
-                    characterName: user.defaultCharacterName || config.defaultCharacterName,
+                    characterName: effectiveDefaultCharacterName,
                     messages: []
                 });
+            } else {
+                const conversationProfileExists = user.characterProfiles.some(
+                    profile => profile.name === conversation.characterName
+                );
+
+                if (!conversationProfileExists && conversation.characterName !== config.defaultCharacterName) {
+                    conversation.characterName = effectiveDefaultCharacterName;
+                }
             }
             
             conversation.messages.push({
@@ -54,11 +74,11 @@ module.exports = {
                 preferredLanguage: user.preferredLanguage || 'Vietnamese',
                 customBotPersonality: user.customBotPersonality || '',
                 responseStyle: user.responseStyle || {
-                    length: 'poetic',
-                    poeticLevel: 5,
-                    detailLevel: 5,
-                    metaphorUsage: true,
-                    paragraphCount: 5
+                    length: 'medium',
+                    poeticLevel: 3,
+                    detailLevel: 4,
+                    metaphorUsage: false,
+                    paragraphCount: 3
                 }
             };
             

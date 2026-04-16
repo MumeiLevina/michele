@@ -91,7 +91,7 @@ module.exports = {
                     { name: ' Link kháng cáo', value: appealLink, inline: false }
                 )
                 .setThumbnail(interaction.guild.iconURL())
-                .setFooter({ text: 'Lilith Bot - Ban System' })
+                .setFooter({ text: 'Michele Bot - Ban System' })
                 .setTimestamp();
 
             // Gửi DM cho người bị ban
@@ -120,7 +120,7 @@ module.exports = {
                     { name: ' Thông báo DM', value: dmSent ? ' Đã gửi' : ' Không gửi được (DM đóng)', inline: false }
                 )
                 .setThumbnail(targetUser.displayAvatarURL())
-                .setFooter({ text: 'Lilith Bot - Ban System' })
+                .setFooter({ text: 'Michele Bot - Ban System' })
                 .setTimestamp();
 
             await interaction.editReply({ embeds: [successEmbed] });

@@ -7,9 +7,9 @@ module.exports = {
     
     async execute(interaction) {
         const embed = new EmbedBuilder()
-            .setColor('#FF9DD1')
-            .setTitle('Lilith Bot - Danh Sách Lệnh')
-            .setDescription('Chào mừng bạn đến với Lilith Bot! Dưới đây là các lệnh bạn có thể sử dụng:')
+            .setColor('#FF7A45')
+            .setTitle('Michele Bot - Danh Sách Lệnh')
+            .setDescription('Chào mừng bạn đến với Michele Bot! Dưới đây là các lệnh bạn có thể sử dụng:')
             .addFields(
                 { name: '`/roleplay [tin nhắn]`', value: 'Bắt đầu hoặc tiếp tục cuộc trò chuyện roleplay với nhân vật' },
                 { name: '`/settings view`', value: 'Xem cài đặt hiện tại của bạn' },
@@ -32,11 +32,11 @@ module.exports = {
                 { name: '`/help`', value: 'Hiển thị thông báo trợ giúp này' }
             )
             .addFields(
-                { name: 'Cách sử dụng', value: 'Bạn cũng có thể nhắn tin trực tiếp bằng cách đề cập đến bot: `@Lilith [tin nhắn của bạn]`' },
+                { name: 'Cách sử dụng', value: 'Bạn cũng có thể nhắn tin trực tiếp bằng cách đề cập đến bot: `@Michele [tin nhắn của bạn]`' },
                 { name: 'Ghi chú DJ', value: 'Lệnh điều khiển nhạc yêu cầu role `DJ` mặc định (có thể đổi bằng `DJ_ROLE_NAME` hoặc `DJ_ROLE_ID` trong env).' }
             )
             .setImage('https://www.google.com/url?sa=i&url=https%3A%2F%2Fza.pinterest.com%2Fbradleyperelaer%2Fnoexistencen%2F&psig=AOvVaw0cnl0pV-2puUZ1J1QGn3Jf&ust=1754480013384000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCICJvb7J844DFQAAAAAdAAAAABAE')
-            .setFooter({ text: 'Lilith Bot' })
+            .setFooter({ text: 'Michele Bot' })
             .setTimestamp();
         
         const row = new ActionRowBuilder()

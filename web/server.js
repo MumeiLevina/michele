@@ -576,6 +576,18 @@ function setupWebServer(client) {
                 { upsert: true, new: true }
             );
 
+            let effectiveDefaultCharacterName = dbUser.defaultCharacterName || config.defaultCharacterName;
+            const hasDefaultProfile = dbUser.characterProfiles.some(
+                profile => profile.name === effectiveDefaultCharacterName
+            );
+
+            // Migrate legacy/default names that no longer map to a valid profile.
+            if (!hasDefaultProfile && effectiveDefaultCharacterName !== config.defaultCharacterName) {
+                effectiveDefaultCharacterName = config.defaultCharacterName;
+                dbUser.defaultCharacterName = config.defaultCharacterName;
+                await dbUser.save();
+            }
+
             let conversation = await Conversation.findOne({
                 userId: user.id,
                 isActive: true
@@ -584,9 +596,17 @@ function setupWebServer(client) {
             if (!conversation) {
                 conversation = new Conversation({
                     userId: user.id,
-                    characterName: dbUser.defaultCharacterName || config.defaultCharacterName,
+                    characterName: effectiveDefaultCharacterName,
                     messages: []
                 });
+            } else {
+                const conversationProfileExists = dbUser.characterProfiles.some(
+                    profile => profile.name === conversation.characterName
+                );
+
+                if (!conversationProfileExists && conversation.characterName !== config.defaultCharacterName) {
+                    conversation.characterName = effectiveDefaultCharacterName;
+                }
             }
 
             conversation.messages.push({
@@ -606,11 +626,11 @@ function setupWebServer(client) {
                 preferredLanguage: dbUser.preferredLanguage || 'Vietnamese',
                 customBotPersonality: dbUser.customBotPersonality || '',
                 responseStyle: dbUser.responseStyle || {
-                    length: 'poetic',
-                    poeticLevel: 5,
-                    detailLevel: 5,
-                    metaphorUsage: true,
-                    paragraphCount: 5
+                    length: 'medium',
+                    poeticLevel: 3,
+                    detailLevel: 4,
+                    metaphorUsage: false,
+                    paragraphCount: 3
                 }
             };
 
