@@ -1,77 +1,245 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Michele Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Inter, Arial, sans-serif; margin: 0; background: #0f1115; color: #ecf1ff; }
-        .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; display: grid; gap: 16px; }
-        .card { background: #171b24; border: 1px solid #272f3f; border-radius: 12px; padding: 14px; }
-        h1, h2 { margin: 0 0 10px; }
-        .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        input, select, button, textarea { background: #0f141d; color: #ecf1ff; border: 1px solid #344058; border-radius: 8px; padding: 9px 10px; }
-        input, select, textarea { flex: 1; min-width: 180px; }
-        button { cursor: pointer; }
-        button:hover { filter: brightness(1.1); }
-        ul { margin: 10px 0 0; padding-left: 20px; }
-        #systemLog { min-height: 120px; max-height: 220px; overflow: auto; font-size: 13px; line-height: 1.4; }
-        #roleplayOutput { white-space: pre-wrap; line-height: 1.5; }
+        .control-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-input,
+        .control-select,
+        .control-textarea,
+        .control-btn {
+            border-radius: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(255, 252, 246, 0.15);
+            color: rgba(255, 250, 243, 0.96);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            padding: 9px 11px;
+        }
+
+        .control-input,
+        .control-select,
+        .control-textarea {
+            flex: 1;
+            min-width: 170px;
+        }
+
+        .control-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .control-btn {
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 252, 246, 0.25);
+        }
+
+        .status-pill {
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: rgba(255, 248, 239, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            font-weight: 800;
+            color: rgba(255, 249, 241, 0.96);
+            width: fit-content;
+        }
+
+        .control-note {
+            margin-top: auto;
+            color: rgba(255, 248, 238, 0.82);
+            font-size: 0.92rem;
+            line-height: 1.35;
+        }
+
+        #nowPlaying {
+            color: rgba(255, 248, 238, 0.9);
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        #queue {
+            list-style: none;
+            margin: 4px 0 0;
+            padding: 0;
+            overflow-y: auto;
+            display: grid;
+            gap: 6px;
+        }
+
+        #queue li {
+            border-radius: 10px;
+            padding: 7px 10px;
+            background: rgba(255, 250, 242, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        #roleplayOutput,
+        #systemLog {
+            white-space: pre-wrap;
+            line-height: 1.4;
+            min-height: 130px;
+        }
+
+        #systemLog {
+            font-size: 0.88rem;
+        }
+
+        .small-select {
+            min-width: 220px;
+            max-width: 420px;
+        }
+
+        @media (max-width: 860px) {
+            .small-select {
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-    <main class="wrap">
-        <section class="card">
-            <h1>Michele Web Dashboard</h1>
-            <div class="row">
-                <strong id="authStatus">Checking session...</strong>
-                <button id="loginBtn" hidden>Login Discord</button>
-                <button id="logoutBtn" hidden>Logout</button>
+    <div class="browser-shell">
+        <header class="browser-top">
+            <div class="browser-tab">Michele control panel</div>
+            <div class="control-row">
+                <span id="authStatus" class="status-pill">Checking session...</span>
+                <button id="loginBtn" class="control-btn" hidden>Login Discord</button>
+                <button id="logoutBtn" class="control-btn" hidden>Logout</button>
             </div>
-            <div class="row" style="margin-top:10px;">
-                <label for="guildSelect">Guild:</label>
-                <select id="guildSelect"></select>
-                <button id="refreshStateBtn">Refresh State</button>
-            </div>
-        </section>
+        </header>
 
-        <section class="card">
-            <h2>Music Control</h2>
-            <div class="row">
-                <input id="musicQuery" type="text" placeholder="YouTube URL hoặc từ khóa">
-                <button id="playBtn">Play</button>
-            </div>
-            <div class="row" style="margin-top:10px;">
-                <button id="pauseBtn">Pause</button>
-                <button id="resumeBtn">Resume</button>
-                <button id="skipBtn">Skip</button>
-                <button id="stopBtn">Stop</button>
-                <button id="repeatBtn">Toggle Repeat</button>
-            </div>
-            <div class="row" style="margin-top:10px;">
-                <input id="volumeInput" type="number" min="0" max="200" value="100">
-                <button id="setVolumeBtn">Set Volume</button>
-            </div>
-            <p id="nowPlaying">No active playback</p>
-            <ul id="queue"></ul>
-        </section>
+        <div class="dashboard-shell glass-panel">
+            <aside class="sidebar glass-panel soft-panel">
+                <button class="menu-item active" type="button">
+                    <span class="menu-glyph">🐾</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">🎵</span>
+                    <span>Music</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">🎭</span>
+                    <span>Roleplay</span>
+                </button>
+                <button class="menu-item" type="button">
+                    <span class="menu-glyph">📜</span>
+                    <span>Logs</span>
+                </button>
+            </aside>
 
-        <section class="card">
-            <h2>Roleplay AI</h2>
-            <div class="row">
-                <textarea id="roleplayInput" rows="3" placeholder="Nhập nội dung cần AI phản hồi"></textarea>
-            </div>
-            <div class="row" style="margin-top:10px;">
-                <button id="roleplayBtn">Gửi Roleplay</button>
-            </div>
-            <div id="roleplayOutput"></div>
-        </section>
+            <main class="main-content">
+                <header class="top-bar glass-panel soft-panel">
+                    <div class="brand">
+                        <img src="/src/cat.png" alt="Michele logo" class="brand-logo">
+                        <h1>Michele Web Dashboard</h1>
+                    </div>
+                    <div class="control-row">
+                        <label for="guildSelect" style="font-weight: 900;">Guild</label>
+                        <select id="guildSelect" class="control-select small-select"></select>
+                        <button id="refreshStateBtn" class="control-btn">Refresh</button>
+                    </div>
+                </header>
 
-        <section class="card">
-            <h2>System Log</h2>
-            <div id="systemLog"></div>
-        </section>
-    </main>
+                <section class="dashboard-grid">
+                    <article class="card glass-panel soft-panel active-status">
+                        <h2>Session</h2>
+                        <div class="control-stack">
+                            <span class="status-pill">Discord OAuth + realtime socket enabled</span>
+                            <div class="mod-preview">
+                                <p>Đăng nhập để tải danh sách guild có quyền quản lý dashboard.</p>
+                                <p>Khi đã đăng nhập, trạng thái phát nhạc sẽ cập nhật theo thời gian thực.</p>
+                            </div>
+                            <p class="control-note">Mẹo: chọn guild ở thanh trên để bắt đầu điều khiển bot.</p>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel neon-card interaction-card">
+                        <h2>Music Search</h2>
+                        <div class="control-row">
+                            <input id="musicQuery" class="control-input" type="text" placeholder="YouTube URL hoặc từ khóa">
+                            <button id="playBtn" class="control-btn">Play</button>
+                        </div>
+                        <p id="nowPlaying">No active playback</p>
+                        <ul id="queue"></ul>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view command-card">
+                        <div class="task-header">
+                            <h2>Playback Controls</h2>
+                            <span class="dots">/</span>
+                        </div>
+                        <div class="command-grid">
+                            <button id="pauseBtn" class="cmd-btn" type="button">Pause</button>
+                            <button id="resumeBtn" class="cmd-btn" type="button">Resume</button>
+                            <button id="skipBtn" class="cmd-btn" type="button">Skip</button>
+                            <button id="stopBtn" class="cmd-btn" type="button">Stop</button>
+                            <button id="repeatBtn" class="cmd-btn" type="button">Toggle Repeat</button>
+                        </div>
+                        <div class="control-row" style="margin-top: 8px;">
+                            <input id="volumeInput" class="control-input" type="number" min="0" max="200" value="100">
+                            <button id="setVolumeBtn" class="control-btn" type="button">Set Volume</button>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel stat-card">
+                        <h2>Status</h2>
+                        <div class="stat-inner">
+                            <img src="/src/michele.png" alt="Michele mascot" class="assistant">
+                            <div class="stat-text">
+                                <h3>Voice Assistant</h3>
+                                <p>Music + roleplay workflow</p>
+                                <p>Ready on selected guild</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view moderation-card">
+                        <h2>Roleplay AI</h2>
+                        <div class="control-stack">
+                            <textarea id="roleplayInput" class="control-textarea" placeholder="Nhập nội dung cần AI phản hồi"></textarea>
+                            <div class="control-row">
+                                <button id="roleplayBtn" class="control-btn" type="button">Gửi Roleplay</button>
+                            </div>
+                            <div id="roleplayOutput" class="chat-window"></div>
+                        </div>
+                    </article>
+
+                    <article class="card glass-panel soft-panel clear-view automation-card">
+                        <h2>System Log</h2>
+                        <div id="systemLog" class="chat-window"></div>
+                    </article>
+                </section>
+            </main>
+        </div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/web/app.js"></script>
