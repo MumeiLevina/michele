@@ -302,6 +302,12 @@ function setupWebServer(client) {
     app.use(sessionMiddleware);
     app.use('/api', apiLimiter);
     app.use('/src', express.static(path.join(__dirname, '..', 'src')));
+    app.get('/', staticAssetLimiter, (req, res) => {
+        res.redirect('/dashboard');
+    });
+    app.get('/healthz', (req, res) => {
+        res.status(200).json({ ok: true });
+    });
     app.get('/style.css', staticAssetLimiter, (req, res) => {
         res.sendFile(path.join(__dirname, 'style.css'));
     });

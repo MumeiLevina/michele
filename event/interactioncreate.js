@@ -40,7 +40,6 @@ module.exports = {
                 const command = interaction.client.commands.get(interaction.commandName);
 
                 if (!command) return;
-
                 try {
                     await command.execute(interaction);
                 } catch (error) {
@@ -49,7 +48,6 @@ module.exports = {
                 }
                 return;
             }
-
             if (interaction.isButton()) {
                 if (interaction.customId === 'continue_roleplay') {
                     const modal = new ModalBuilder()
